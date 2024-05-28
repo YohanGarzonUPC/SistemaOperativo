@@ -78,6 +78,7 @@ Este sistema operativo es una herramienta educativa valiosa para entender los pr
 
 
 ### Tutorial Básico para Replicar un Sistema Operativo
+
 #### 1. Prerrequisitos
 - **Entorno de desarrollo**: Compilador de C (como GCC), ensamblador (como NASM), emulador (como QEMU o Bochs).
 
@@ -139,7 +140,7 @@ TOOLPREFIX := $(shell if i386-jos-elf-objdump -i 2>&1 | grep '^elf32-i386$$' >/d
     echo "***" 1>&2; exit 1; fi)
 endif
 
-- TOOLPREFIX: Prefijo de las herramientas de compilación (como `gcc`, `ld`, etc.). Intenta inferir el prefijo adecuado está definido.
+- TOOLPREFIX: Busca en el sistema que tenga las herramientas de compilación (como `gcc`, `ld`, etc.). Al verificar si puede encontrarlo o dar el respectivo aviso.
 
 ### Detección de QEMU
 
@@ -160,7 +161,7 @@ QEMU = $(shell if which qemu > /dev/null; \
     echo "***" 1>&2; exit 1)
 endif
 
-QEMU: Variable que contiene el nombre o la ruta del ejecutable QEMU. 
+QEMU: Variable que contiene el nombre o la ruta del ejecutable QEMU siendo qemu el emulador que se corre el sistema. 
 
 ### Variables de Compilación
 
@@ -183,7 +184,7 @@ ifneq ($(shell $(CC) -dumpspecs 2>/dev/null | grep -e '[^f]nopie'),)
 CFLAGS += -fno-pie -nopie
 Endif
 
-- Definición de variables como `CC` (compilador), `AS` (ensamblador), `LD` (enlazador) y sus respectivas opciones (`CFLAGS`, `ASFLAGS`, `LDFLAGS`).
+- Definición de variables como `CC` (compilador), `AS` (ensamblador), `LD` (enlazador) y sus respectivas opciones (`CFLAGS`, `ASFLAGS`, `LDFLAGS`). 
 
 ### Reglas de Construcción
 
@@ -231,15 +232,10 @@ kernel: $(OBJS) entry.o entryother initcode kernel.ld
 	$(OBJDUMP) -S kernel > kernel.asm
 	$(OBJDUMP) -t kernel | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > kernel.sym
 
-- Define cómo construir el kernel utilizando los objetos en `OBJS` y otros archivos importantes (`entry.o`, `entryother`, `initcode`, `kernel.ld`).
+- Define cómo construir el kernel utilizando los objetos en `OBJS` inicializados al inicio y otros archivos importantes (`entry.o`, `entryother`, `initcode`, `kernel.ld`).
 
 ### Reglas para Herramientas y Utilidades
 
-#### Generación de Etiquetas (tags)
-
-tags: $(OBJS) entryother.S _init
-	etags *.S *.c
-- Genera un archivo de etiquetas para facilitar la navegación en el código fuente.
 
 #### Construcción de Programas de Usuario
 
@@ -249,7 +245,7 @@ _%: %.o $(ULIB)
 	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o $@ $^
 	$(OBJDUMP) -S $@ > $*.asm
 	$(OBJDUMP) -t $@ | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $*.sym
-- Compila programas de usuario específicos como `_cat`, `_echo`, etc.
+- Compila programas de usuario específicos como `_cat`, `_echo`, etc. los comandos incluidos ne el sistema.
 
 
 #### Creación del Sistema de Archivos
@@ -266,7 +262,7 @@ clean:
 	initcode initcode.out kernel xv6.img fs.img kernelmemfs \
 	xv6memfs.img mkfs .gdbinit \
 	$(UPROGS)
-- Elimina archivos generados para limpiar el directorio de trabajo.
+- Elimina archivos generados para limpiar el directorio de trabajo para volver a cargar y evitar posibles archivos corruptos.
 
 ### Sobre el desarrollo del programa.
 ##Kernel
