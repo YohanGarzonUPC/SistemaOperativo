@@ -76,3 +76,215 @@ El sistema operativo incluye varios programas de ejemplo en el directorio `user/
 
 Este sistema operativo es una herramienta educativa valiosa para entender los principios básicos de los sistemas operativos. Su código fuente es compacto y bien documentado, lo que facilita su estudio y modificación. A través del estudio de este sistema operativo, se pueden aprender conceptos fundamentales como la gestión de procesos, la gestión de memoria, el sistema de archivos y la interacción con el hardware.
 
+
+### Tutorial Básico para Replicar un Sistema Operativo
+#### 1. Prerrequisitos
+- **Entorno de desarrollo**: Compilador de C (como GCC), ensamblador (como NASM), emulador (como QEMU o Bochs).
+
+#### 2. Configuración del Entorno
+Instala las herramientas necesarias en tu sistema. En una distribución de Linux, puedes usar:
+```sh
+sudo apt-get update
+sudo apt-get install build-essential nasm qemu-system-x86_64
+```
+#### 3. Explicación sobre el Make file.
+Este es un script de construcción utilizado para compilar y construir normalmente un sistema operativo con el comando “make ---”. Este Makefile contiene instrucciones para la compilación cruzada, generación de imágenes de disco, manejo de dependencias, y configuración de herramientas necesarias. Aquí una explicación detallada sección por sección:
+
+### Definición de Objetos.
+OBJS = \
+	bio.o\
+	console.o\
+	exec.o\
+	file.o\
+	fs.o\
+	ide.o\
+	ioapic.o\
+	kalloc.o\
+	kbd.o\
+	lapic.o\
+	log.o\
+	main.o\
+	mp.o\
+	picirq.o\
+	pipe.o\
+	proc.o\
+	sleeplock.o\
+	spinlock.o\
+	string.o\
+	swtch.o\
+	syscall.o\
+	sysfile.o\
+	sysproc.o\
+	trapasm.o\
+	trap.o\
+	uart.o\
+	vectors.o\
+	vm.o\
+Lista de archivos objeto que serán compilados para formar el kernel.
+
+### Herramientas de Compilación
+
+ifndef TOOLPREFIX
+TOOLPREFIX := $(shell if i386-jos-elf-objdump -i 2>&1 | grep '^elf32-i386$$' >/dev/null 2>&1; \
+    then echo 'i386-jos-elf-'; \
+    elif objdump -i 2>&1 | grep 'elf32-i386' >/dev/null 2>&1; \
+    then echo ''; \
+    else echo "***" 1>&2; \
+    echo "*** Error: Couldn't find an i386-*-elf version of GCC/binutils." 1>&2; \
+    echo "*** Is the directory with i386-jos-elf-gcc in your PATH?" 1>&2; \
+    echo "*** If your i386-*-elf toolchain is installed with a command" 1>&2; \
+    echo "*** prefix other than 'i386-jos-elf-', set your TOOLPREFIX" 1>&2; \
+    echo "*** environment variable to that prefix and run 'make' again." 1>&2; \
+    echo "*** To turn off this error, run 'gmake TOOLPREFIX= ...'." 1>&2; \
+    echo "***" 1>&2; exit 1; fi)
+endif
+
+- TOOLPREFIX: Prefijo de las herramientas de compilación (como `gcc`, `ld`, etc.). Intenta inferir el prefijo adecuado está definido.
+
+### Detección de QEMU
+
+ifndef QEMU
+QEMU = $(shell if which qemu > /dev/null; \
+    then echo qemu; exit; \
+    elif which qemu-system-i386 > /dev/null; \
+    then echo qemu-system-i386; exit; \
+    elif which qemu-system-x86_64 > /dev/null; \
+    then echo qemu-system-x86_64; exit; \
+    else \
+    qemu=/Applications/Q.app/Contents/MacOS/i386-softmmu.app/Contents/MacOS/i386-softmmu; \
+    if test -x $$qemu; then echo $$qemu; exit; fi; fi; \
+    echo "***" 1>&2; \
+    echo "*** Error: Couldn't find a working QEMU executable." 1>&2; \
+    echo "*** Is the directory containing the qemu binary in your PATH" 1>&2; \
+    echo "*** or have you tried setting the QEMU variable in Makefile?" 1>&2; \
+    echo "***" 1>&2; exit 1)
+endif
+
+QEMU: Variable que contiene el nombre o la ruta del ejecutable QEMU. 
+
+### Variables de Compilación
+
+CC = $(TOOLPREFIX)gcc
+AS = $(TOOLPREFIX)gas
+LD = $(TOOLPREFIX)ld
+OBJCOPY = $(TOOLPREFIX)objcopy
+OBJDUMP = $(TOOLPREFIX)objdump
+CFLAGS = -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer
+CFLAGS += $(shell $(CC) -fno-stack-protector -E -x c /dev/null >/dev/null 2>&1 && echo -fno-stack-protector)
+ASFLAGS = -m32 -gdwarf-2 -Wa,-divide
+# FreeBSD ld wants ``elf_i386_fbsd''
+LDFLAGS += -m $(shell $(LD) -V | grep elf_i386 2>/dev/null | head -n 1)
+
+# Disable PIE when possible (for Ubuntu 16.10 toolchain)
+ifneq ($(shell $(CC) -dumpspecs 2>/dev/null | grep -e '[^f]no-pie'),)
+CFLAGS += -fno-pie -no-pie
+endif
+ifneq ($(shell $(CC) -dumpspecs 2>/dev/null | grep -e '[^f]nopie'),)
+CFLAGS += -fno-pie -nopie
+Endif
+
+- Definición de variables como `CC` (compilador), `AS` (ensamblador), `LD` (enlazador) y sus respectivas opciones (`CFLAGS`, `ASFLAGS`, `LDFLAGS`).
+
+### Reglas de Construcción
+
+#### Construcción de Imágenes de Disco
+
+xv6.img: bootblock kernel
+	dd if=/dev/zero of=xv6.img count=10000
+	dd if=bootblock of=xv6.img conv=notrunc
+	dd if=kernel of=xv6.img seek=1 conv=notrunc
+
+xv6memfs.img: bootblock kernelmemfs
+	dd if=/dev/zero of=xv6memfs.img count=10000
+	dd if=bootblock of=xv6memfs.img conv=notrunc
+	dd if=kernelmemfs of=xv6memfs.img seek=1 conv=notrunc
+
+- Define cómo crear la imagen de disco `xv6.img` utilizando `bootblock` y `kernel`.
+
+#### Construcción de `bootblock`
+bootblock: bootasm.S bootmain.c
+	$(CC) $(CFLAGS) -fno-pic -O -nostdinc -I. -c bootmain.c
+	$(CC) $(CFLAGS) -fno-pic -nostdinc -I. -c bootasm.S
+	$(LD) $(LDFLAGS) -N -e start -Ttext 0x7C00 -o bootblock.o bootasm.o bootmain.o
+	$(OBJDUMP) -S bootblock.o > bootblock.asm
+	$(OBJCOPY) -S -O binary -j .text bootblock.o bootblock
+	./sign.pl bootblock
+
+entryother: entryother.S
+	$(CC) $(CFLAGS) -fno-pic -nostdinc -I. -c entryother.S
+	$(LD) $(LDFLAGS) -N -e start -Ttext 0x7000 -o bootblockother.o entryother.o
+	$(OBJCOPY) -S -O binary -j .text bootblockother.o entryother
+	$(OBJDUMP) -S bootblockother.o > entryother.asm
+
+initcode: initcode.S
+	$(CC) $(CFLAGS) -nostdinc -I. -c initcode.S
+	$(LD) $(LDFLAGS) -N -e start -Ttext 0 -o initcode.out initcode.o
+	$(OBJCOPY) -S -O binary initcode.out initcode
+	$(OBJDUMP) -S initcode.o > initcode.asm
+
+- Proceso de compilación para crear `bootblock` a partir de `bootasm.S` y `bootmain.c`.
+
+#### Construcción del Kernel
+
+kernel: $(OBJS) entry.o entryother initcode kernel.ld
+	$(LD) $(LDFLAGS) -T kernel.ld -o kernel entry.o $(OBJS) -b binary initcode entryother
+	$(OBJDUMP) -S kernel > kernel.asm
+	$(OBJDUMP) -t kernel | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > kernel.sym
+
+- Define cómo construir el kernel utilizando los objetos en `OBJS` y otros archivos importantes (`entry.o`, `entryother`, `initcode`, `kernel.ld`).
+
+### Reglas para Herramientas y Utilidades
+
+#### Generación de Etiquetas (tags)
+
+tags: $(OBJS) entryother.S _init
+	etags *.S *.c
+- Genera un archivo de etiquetas para facilitar la navegación en el código fuente.
+
+#### Construcción de Programas de Usuario
+
+ULIB = ulib.o usys.o printf.o umalloc.o
+
+_%: %.o $(ULIB)
+	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o $@ $^
+	$(OBJDUMP) -S $@ > $*.asm
+	$(OBJDUMP) -t $@ | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $*.sym
+- Compila programas de usuario específicos como `_cat`, `_echo`, etc.
+
+
+#### Creación del Sistema de Archivos
+
+fs.img: mkfs README $(UPROGS)
+	./mkfs fs.img README $(UPROGS)
+
+- Crea una imagen del sistema de archivos `fs.img` usando `mkfs` y los programas de usuario.
+
+### Reglas de Limpieza
+clean: 
+	rm -f *.tex *.dvi *.idx *.aux *.log *.ind *.ilg \
+	*.o *.d *.asm *.sym vectors.S bootblock entryother \
+	initcode initcode.out kernel xv6.img fs.img kernelmemfs \
+	xv6memfs.img mkfs .gdbinit \
+	$(UPROGS)
+- Elimina archivos generados para limpiar el directorio de trabajo.
+
+### Sobre el desarrollo del programa.
+##Kernel
+El kernel esta obtenido de GNU ld, el enlazador de GNU. Este script se utiliza para controlar la disposición y organización del código y datos en la memoria cuando se construye un ejecutable, en este caso, un kernel. Este script en particular es para un kernel diseñado para una arquitectura i386 (x86 de 32 bits).
+Para obtenerlo ver el git://git.savannah.gnu.org/hurd/hurd.git
+
+## implementación de Kernel
+Para la comprensión sobre el funcionamiento de los aspectos del kernel se usa de referencia este video en el cual se explica e introduce a los requerimientos sobre la creación de un sistema operativo:
+Canal Xabi Iglesias.
+https://www.youtube.com/watch?v=atNMrBVwRjk&list=PLRbwCFn6bxivuEHn7c4CTYLCZbDU2y4Hd&pp=iAQB
+
+Donde se trabaja los aspectos en el siguiente orden:
+1.	Memoria física.
+2.	Page frame (manejo sobre la organización de la memoria)
+3.	Interrupciones sobre el sistema
+4.	Memoria Virtual 
+5.	Manejo de lectura del disco, aunque no se implementa sobre la escritura de este.
+6.	Control de drivers sobre el teclado e iniciar un main.
+Comprendiendo sobre el sistema operativo faltaba agregar unos aspectos en donde se uso de referencia el software libre GNU para la implementación de los demás aspectos.
+Para este paso ya se agrego le manejo de comando como car (cat.c), echo (echo.c), file para el guarado de archivos (file.c).
+
