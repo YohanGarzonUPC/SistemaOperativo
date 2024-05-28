@@ -1,7 +1,11 @@
-## Tabla de Contenidos
+# **Sistema Operativo Educativo**
 
-1. [Introducción](#introducción)
-2. [Arquitectura del Sistema](#arquitectura-del-sistema)
+Este sistema operativo es una herramienta de enseñanza diseñada para cursos de sistemas operativos. Es una implementación moderna y simplificada que corre en plataformas x86 multiprocesador y proporciona una buena base para entender los conceptos fundamentales de los sistemas operativos.
+
+## **Tabla de Contenidos**
+
+1. Introducción
+2. Arquitectura del Sistema
 3. [Componentes Principales](#componentes-principales)
 4. [Compilación e Instalación](#compilación-e-instalación)
 5. [Uso Básico](#uso-básico)
@@ -9,22 +13,22 @@
 7. [Ejemplos y Casos de Uso](#ejemplos-y-casos-de-uso)
 8. [Conclusiones](#conclusiones)
 
-## Introducción
+## **Introducción**
 
-xv6 es un sistema operativo de enseñanza desarrollado en el MIT para proporcionar una visión simplificada de cómo funciona un sistema operativo moderno. Es una reimplementación moderna y simplificada del Unix V6 desarrollado en los años 70. xv6 corre en plataformas x86 multiprocesador y proporciona una buena base para entender los conceptos fundamentales de los sistemas operativos.
+Este sistema operativo de enseñanza ha sido desarrollado para proporcionar una visión simplificada de cómo funciona un sistema operativo moderno. Corre en plataformas x86 multiprocesador y proporciona una buena base para entender los conceptos fundamentales de los sistemas operativos.
 
-## Arquitectura del Sistema
+## **Arquitectura del Sistema**
 
-xv6 está estructurado en capas, siguiendo el diseño clásico de Unix. Las capas principales incluyen:
+El sistema operativo está estructurado en capas, siguiendo el diseño clásico. Las capas principales incluyen:
 
 - **Núcleo (Kernel)**: Maneja la memoria, los procesos, el sistema de archivos y las interacciones con el hardware.
 - **Sistema de Archivos (File System)**: Proporciona una manera estructurada de almacenar y recuperar datos.
 - **Controladores de Dispositivos (Device Drivers)**: Facilitan la comunicación entre el núcleo y los dispositivos hardware.
 - **Librerías de Usuario (User Libraries)**: Funciones que los programas de usuario pueden utilizar para interactuar con el sistema operativo.
 
-## Componentes Principales
+## **Componentes Principales**
 
-Algunos de los archivos clave en el sistema operativo xv6 incluyen:
+Algunos de los archivos clave en el sistema operativo incluyen:
 
 - `main.c`: El punto de entrada principal del sistema operativo.
 - `syscall.c` y `syscall.h`: Implementación de las llamadas al sistema.
@@ -33,41 +37,43 @@ Algunos de los archivos clave en el sistema operativo xv6 incluyen:
 - `trap.c` y `trapasm.S`: Manejo de interrupciones y excepciones.
 - `uart.c`: Controlador del puerto serie.
 
-## Compilación e Instalación
+## **Compilación e Instalación**
 
-Para compilar e instalar xv6:
+Para compilar e instalar el sistema operativo:
 
 1. Asegúrese de tener un entorno de desarrollo adecuado (Linux, QEMU, gcc, etc.).
-2. Navegue al directorio `xv6-public`.
+2. Navegue al directorio del proyecto.
 3. Ejecute `make` para compilar el sistema.
-4. Use `make qemu` para ejecutar xv6 en un emulador QEMU.
+4. Use `make qemu` para ejecutar el sistema operativo en un emulador QEMU.
 
-## Uso Básico
+## **Uso Básico**
 
-Una vez que xv6 está corriendo, puede usar varios comandos integrados para interactuar con el sistema, tales como:
+Una vez que el sistema operativo está corriendo, puede usar varios comandos integrados para interactuar con el sistema, tales como:
 
 - `ls`: Listar archivos en el directorio actual.
 - `cat`: Mostrar el contenido de un archivo.
 - `echo`: Imprimir un mensaje en la pantalla.
 - `grep`: Buscar patrones en el texto.
 
-## Estructura del Código
+## **Estructura del Código**
 
-El código fuente de xv6 está organizado en varios archivos y directorios. Aquí hay una descripción de algunos directorios y archivos importantes:
+El código fuente del sistema operativo está organizado en varios archivos y directorios. Aquí hay una descripción de algunos directorios y archivos importantes:
 
 - `bootasm.S` y `bootmain.c`: Código de arranque.
 - `kernel/`: Contiene el núcleo del sistema operativo.
 - `user/`: Programas de usuario y utilidades.
 - `fs.c`, `file.c`: Implementación del sistema de archivos.
 
-## Ejemplos y Casos de Uso
+## **Ejemplos y Casos de Uso**
 
-xv6 incluye varios programas de ejemplo en el directorio `user/`. Estos programas muestran cómo se pueden utilizar las llamadas al sistema y otros servicios proporcionados por el núcleo. Algunos ejemplos incluyen:
+El sistema operativo incluye varios programas de ejemplo en el directorio `user/`. Estos programas muestran cómo se pueden utilizar las llamadas al sistema y otros servicios proporcionados por el núcleo. Algunos ejemplos incluyen:
 
 - `init.c`: El primer proceso que se ejecuta al arrancar el sistema.
 - `sh.c`: Una shell simple para interactuar con el sistema operativo.
 - `ls.c`, `cat.c`: Utilidades básicas del sistema de archivos.
 
-## Conclusiones
+## **Conclusiones**
 
-xv6 es una herramienta educativa valiosa para entender los principios básicos de los sistemas operativos. Su código fuente es compacto y bien documentado, lo que facilita su estudio y modificación. A través del estudio de xv6, se pueden aprender conceptos fundamentales como la gestión de procesos, la gestión de memoria, el sistema de archivos y la interacción con el hardware.
+Este sistema operativo es una herramienta educativa valiosa para entender los principios básicos de los sistemas operativos. Su código fuente es compacto y bien documentado, lo que facilita su estudio y modificación. A través del estudio de este sistema operativo, se pueden aprender conceptos fundamentales como la gestión de procesos, la gestión de memoria, el sistema de archivos y la interacción con el hardware.
+
+
